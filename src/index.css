@@ -1,13 +1,175 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    
+  }
+
+
+/* Base styles */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  font-family: Cambria, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: black;
+  color: white;
+  cursor: move;
+  transform: scale(0.90);
+  transform-origin: top center;
+  height: 111.111vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+
+
+/* Calendar Header Styling */
+.calendar-header {
+  text-align: center;
+  padding: 20px;
+  font-family: serif;
+}
+
+.calendar-header h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  cursor: help !important;
+}
+
+.calendar-header h2 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.calendar-header h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+/* Popup Styling */
+.popup {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background-color: rgb(220, 220, 220);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.popup-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 24px;
+  cursor: crosshair;
+}
+
+/* Yellow Popup Styling */
+.yellow-popup {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 150px;
+  background-color: rgba(255, 0, 0, 0.8);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+}
+
+.yellow-popup h3 {
+  color: white;
+}
+
+/* Timer Button */
+.timer-button {
+  position: absolute;
+  right: 5%;
+  top: 15%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  font-family: Cambria, serif;
+  padding: 15px 30px;
+  letter-spacing: 8px;
+  z-index: 1000;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  width: 100%;
+  background-color: #ddd;
+  height: 20px;
+  margin-top: 3px;
+  cursor: e-resize;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.1s linear;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Timestamp styles */
+.timestamp-parent {
+  position: relative;
+  width: 100%;
+}
+
+.timestamp-button {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  cursor: none;
+  transition: background-color 0.3s;
+  color: black;
+  width: 100%;
+  text-align: center;
+}
+
+.timestamp-button:hover {
+  background-color: #ddd;
+}
+
+.timestamp-button.active {
+  background-color: #ddd;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .upload-dialog {
+    width: 90%;
+    max-width: 300px;
+  }
+  
+  .timestamp-button {
+    padding: 15px 10px;
+    font-size: 16px;
+  }
 }
