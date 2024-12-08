@@ -22,7 +22,7 @@ const App = () => {
           clearInterval(timer);
           
           // Open original calendar and close this one
-          window.location.replace('http://localhost:8001/sounds-of-life.html?v=2'); // bring back to http://localhost:8001/sounds-of-life.html once uploading the website to internet
+          window.location.replace('https://yonlad.github.io/sounds-of-life'); // change url based on hosting domain
           return 0;
         }
         return prev - 1;
