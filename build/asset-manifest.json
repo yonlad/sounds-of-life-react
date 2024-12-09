@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/sounds-of-life-react/static/css/main.52119278.css",
+    "main.js": "/sounds-of-life-react/static/js/main.360bfbf6.js",
+    "index.html": "/sounds-of-life-react/index.html",
+    "main.52119278.css.map": "/sounds-of-life-react/static/css/main.52119278.css.map",
+    "main.360bfbf6.js.map": "/sounds-of-life-react/static/js/main.360bfbf6.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.52119278.css",
+    "static/js/main.360bfbf6.js"
+  ]
+}
