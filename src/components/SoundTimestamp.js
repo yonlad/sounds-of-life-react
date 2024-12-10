@@ -41,6 +41,7 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
     const [showUploadPrompt, setShowUploadPrompt] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [isProcessing, setIsProcessing] = useState(false);
     
     const audioRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -233,12 +234,14 @@ const handleFileUpload = async (event) => {
       const url = await audioServices.upload(wavBlob, filename);
       
       setShowUploadPrompt(false);
+      setIsProcessing(false);
       await playSound(url);
   } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing audio file. Please try again.');
       setShowUploadPrompt(false);
       setIsPlaying(false);
+      setIsProcessing(false);
   }
 };
 
@@ -271,11 +274,11 @@ const handleFileUpload = async (event) => {
         {time}
       </div>
 
-      {isPlaying && !suppressProgressBar && (
+      {(isPlaying || isProcessing) && !suppressProgressBar && (
         <div
           ref={progressBarRef}
           onClick={(e) => {
-            if (audioRef.current && audioRef.current.duration) {
+            if (!isProcessing && audioRef.current && audioRef.current.duration) {
               const rect = e.currentTarget.getBoundingClientRect();
               const ratio = (e.clientX - rect.left) / rect.width;
               const newTime = ratio * audioRef.current.duration;
@@ -289,23 +292,40 @@ const handleFileUpload = async (event) => {
             height: '20px',
             backgroundColor: '#ddd',
             marginTop: '3px',
-            cursor: 'e-resize',
+            cursor: isProcessing ? 'wait' : 'e-resize',
             position: 'relative',
           }}
         >
-          <div
-            style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: '#4caf50',
-              transition: 'width 0.1s linear',
-              position: 'absolute',
-              left: 0,
-              top: 0,
-            }}
-          />
-        </div>
-      )}
+          {isProcessing ? (
+              <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#ffa500',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>
+                Processing...
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: `${progress}%`,
+                  height: '100%',
+                  backgroundColor: '#4caf50',
+                  transition: 'width 0.1s linear',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                }}
+              />
+            )}
+          </div>
+        )}
+
 
       {showUploadPrompt && (
         <div
