@@ -47,6 +47,20 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
     const fileInputRef = useRef(null);
     const progressBarRef = useRef(null);
     const timestampId = `${date}-${time}`;
+
+
+    useEffect(() => {
+      console.log('Processing state:', isProcessing);
+  }, [isProcessing]);
+
+  const resetStates = () => {
+    setIsPlaying(false);
+    setIsActive(false);
+    setProgress(0);
+    setShowUploadPrompt(false);
+    setIsHovered(false);
+    setIsProcessing(false); // Make sure processing state is reset
+};
   
 
     // Effect to sync state with GlobalAudioController
@@ -78,13 +92,7 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
     return () => clearInterval(interval);
   }, [timestampId, onProgress, isActive]);
 
-  const resetStates = () => {
-    setIsPlaying(false);
-    setIsActive(false);
-    setProgress(0);
-    setShowUploadPrompt(false);
-    setIsHovered(false); // Also reset hover state
-  };
+  
 
   const handleMouseEnter = () => {
     if (!GlobalAudioController.activeTimestamp || GlobalAudioController.activeTimestamp !== timestampId) {
@@ -215,18 +223,29 @@ const handleFileUpload = async (event) => {
 
   try {
 
+      // Set processing state before any async operations
       setIsProcessing(true);
-      setShowUploadPrompt(false); // Hide upload prompt while processing
+      setShowUploadPrompt(false);
+      setIsActive(true);
 
+      GlobalAudioController.cleanup();
+      GlobalAudioController.activeTimestamp = timestampId;
+
+      await cleanupCurrentAudio();
+
+      console.log('Starting file processing...');
 
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioContext();
 
       // Show processing state while loading file
+      console.log('Reading file...');
       const arrayBuffer = await file.arrayBuffer();
+      console.log('Decoding audio...');
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
       // Trim to 3 minutes if longer
+      console.log('Trimming audio...');
       const duration = Math.min(180, audioBuffer.duration);
       const trimmedBuffer = audioContext.createBuffer(
           audioBuffer.numberOfChannels,
@@ -241,21 +260,25 @@ const handleFileUpload = async (event) => {
           );
       }
 
+      console.log('Converting to WAV...');
       const wavBlob = await audioBufferToWAV(trimmedBuffer);
       const filename = `${date}-${time.replace(':', '-')}.m4a`;
       
       // Upload to Firebase
+      console.log('Uploading to Firebase...');
       const url = await audioServices.upload(wavBlob, filename);
-      
+
+      console.log('Processing complete, starting playback...');
       setShowUploadPrompt(false);
       setIsProcessing(false);
       await playSound(url);
   } catch (error) {
-      console.error('Error processing file:', error);
+      cconsole.error('Error processing file:', error);
       alert('Error processing audio file. Please try again.');
-      setShowUploadPrompt(false);
-      setIsPlaying(false);
       setIsProcessing(false);
+      setShowUploadPrompt(true);
+      setIsPlaying(false);
+      setIsActive(false);
   }
 };
 
@@ -311,7 +334,8 @@ const handleFileUpload = async (event) => {
                         justifyContent: 'center',
                         color: 'white',
                         fontSize: '12px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        animation: 'pulse 1.5s infinite'
                     }}>
                         processing...
                     </div>
@@ -343,7 +367,7 @@ const handleFileUpload = async (event) => {
 
 
 
-      {showUploadPrompt && (
+      {showUploadPrompt && !isProcessing && (
         <div
           style={{
             position: 'fixed',
