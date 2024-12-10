@@ -72,6 +72,10 @@ export const audioServices = {
             const audioRef = ref(storage, `new-sounds/${fileName}`);
             return await getDownloadURL(audioRef);
         } catch (error) {
+            if (error.code === 'storage/object-not-found') {
+                // Return null instead of throwing for missing files
+                return null;
+            }
             console.error('Error getting audio URL:', error);
             throw error;
         }

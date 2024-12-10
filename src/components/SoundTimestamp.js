@@ -186,13 +186,20 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
     GlobalAudioController.cleanup();
     
     try {
-        const filename = `${date}-${time.replace(':', '-')}.m4a`;
-        const url = await audioServices.getUrl(filename);
-        await playSound(url);
-    } catch (error) {
-        console.error('Error getting audio:', error);
-        setShowUploadPrompt(true);
-    }
+      const filename = `${date}-${time.replace(':', '-')}.m4a`;
+      const url = await audioServices.getUrl(filename);
+      
+      // If url is null, file doesn't exist
+      if (!url) {
+          setShowUploadPrompt(true);
+          return;
+      }
+      
+      await playSound(url);
+  } catch (error) {
+      console.error('Error getting audio:', error);
+      setShowUploadPrompt(true);
+  }
 };
 
 
@@ -207,8 +214,15 @@ const handleFileUpload = async (event) => {
   await cleanupCurrentAudio();
 
   try {
+
+      setIsProcessing(true);
+      setShowUploadPrompt(false); // Hide upload prompt while processing
+
+
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioContext();
+
+      // Show processing state while loading file
       const arrayBuffer = await file.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
@@ -255,76 +269,78 @@ const handleFileUpload = async (event) => {
 
   return (
     <div className="timestamp-container">
-      <div
-        onClick={checkAndPlaySound}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          backgroundColor: isActive ? '#ddd' : isHovered ? '#ddd' : '#f0f0f0',
-          border: 'none',
-          padding: '10px',
-          fontSize: '18px',
-          cursor: 'pointer',
-          transition: 'background-color 0.3s',
-          color: 'black',
-          width: '100%',
-          textAlign: 'center',
-        }}
-      >
-        {time}
-      </div>
-
-      {(isPlaying || isProcessing) && !suppressProgressBar && (
         <div
-          ref={progressBarRef}
-          onClick={(e) => {
-            if (!isProcessing && audioRef.current && audioRef.current.duration) {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const ratio = (e.clientX - rect.left) / rect.width;
-              const newTime = ratio * audioRef.current.duration;
-              if (isFinite(newTime)) {
-                audioRef.current.currentTime = newTime;
-              }
-            }
-          }}
-          style={{
-            width: '100%',
-            height: '20px',
-            backgroundColor: '#ddd',
-            marginTop: '3px',
-            cursor: isProcessing ? 'wait' : 'e-resize',
-            position: 'relative',
-          }}
-        >
-          {isProcessing ? (
-              <div style={{
+            onClick={checkAndPlaySound}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            style={{
+                backgroundColor: isActive ? '#ddd' : isHovered ? '#ddd' : '#f0f0f0',
+                border: 'none',
+                padding: '10px',
+                fontSize: '18px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s',
+                color: 'black',
                 width: '100%',
-                height: '100%',
-                backgroundColor: '#ffa500',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '12px',
-                fontWeight: 'bold'
-              }}>
-                Processing...
-              </div>
-            ) : (
-              <div
+                textAlign: 'center',
+            }}
+        >
+            {time}
+        </div>
+
+        {(isPlaying || isProcessing) && !suppressProgressBar && (
+            <div
+                ref={progressBarRef}
                 style={{
-                  width: `${progress}%`,
-                  height: '100%',
-                  backgroundColor: '#4caf50',
-                  transition: 'width 0.1s linear',
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
+                    width: '100%',
+                    height: '20px',
+                    backgroundColor: '#ddd',
+                    marginTop: '3px',
+                    cursor: isProcessing ? 'wait' : 'e-resize',
+                    position: 'relative',
+                    overflow: 'hidden'
                 }}
-              />
-            )}
-          </div>
+            >
+                {isProcessing ? (
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: '#ffa500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    }}>
+                        processing...
+                    </div>
+                ) : (
+                    <div
+                        onClick={(e) => {
+                            if (audioRef.current && audioRef.current.duration) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const ratio = (e.clientX - rect.left) / rect.width;
+                                const newTime = ratio * audioRef.current.duration;
+                                if (isFinite(newTime)) {
+                                    audioRef.current.currentTime = newTime;
+                                }
+                            }
+                        }}
+                        style={{
+                            width: `${progress}%`,
+                            height: '100%',
+                            backgroundColor: '#4caf50',
+                            transition: 'width 0.1s linear',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                        }}
+                    />
+                )}
+            </div>
         )}
+
 
 
       {showUploadPrompt && (
