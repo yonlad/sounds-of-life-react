@@ -1,6 +1,6 @@
 // public/env.js
 window.env = {
-    REACT_APP_FIREBASE_API_KEY: 'AIzaSyA71UkTjdQ8_qpPmJu7PuNqI2ukvlgVE9k',
+    REACT_APP_FIREBASE_API_KEY: 'AIzaSyAZJY1TO_FaZK826Ly3zdRTm_eIfXJakBo',
     REACT_APP_FIREBASE_AUTH_DOMAIN: 'sounds-of-life.firebaseapp.com',
     REACT_APP_FIREBASE_PROJECT_ID: 'sounds-of-life',
     REACT_APP_FIREBASE_STORAGE_BUCKET: 'sounds-of-life.firebasestorage.app',
