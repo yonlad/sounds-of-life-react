@@ -273,7 +273,7 @@ const handleFileUpload = async (event) => {
       setIsProcessing(false);
       await playSound(url);
   } catch (error) {
-      cconsole.error('Error processing file:', error);
+      console.error('Error processing file:', error);
       alert('Error processing audio file. Please try again.');
       setIsProcessing(false);
       setShowUploadPrompt(true);
