@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { audioServices } from '../firebase/services';
 import { audioBufferToWAV } from '../utils/audioUtils';
 
 // Global audio controller to manage active timestamp across all instances
@@ -45,6 +46,7 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
     const fileInputRef = useRef(null);
     const progressBarRef = useRef(null);
     const timestampId = `${date}-${time}`;
+  
 
     // Effect to sync state with GlobalAudioController
   useEffect(() => {
@@ -167,7 +169,7 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
 
   const checkAndPlaySound = async (e) => {
     e.stopPropagation();
-
+    
     const timestampId = `${date}-${time}`;
 
     // Check if this timestamp is already playing
@@ -178,125 +180,67 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
         setShowUploadPrompt(true);
         setIsActive(true);
         return;
-      }
-    
+    }
     // Always cleanup global state first
     GlobalAudioController.cleanup();
     
-    // Set this timestamp as active
-    GlobalAudioController.activeTimestamp = timestampId;
-    
-    // Reset states immediately
-    resetStates();
-    await cleanupCurrentAudio();
-
-    // If we're no longer the active timestamp, abort
-    if (GlobalAudioController.activeTimestamp !== timestampId) return;
-
-    const abortController = new AbortController();
-    GlobalAudioController.activeAbortController = abortController;
-    
-    const soundFile = `http://localhost:8001/new-sounds/${date}-${time.replace(':', '-')}.m4a`;
-    
     try {
-      const response = await fetch(soundFile, { 
-        method: 'HEAD',
-        signal: abortController.signal
-      });
-      
-      if (GlobalAudioController.activeTimestamp !== timestampId) return;
-      
-      if (response.ok) {
-        await playSound(soundFile);
-      } else {
-        setShowUploadPrompt(true);
-        setIsActive(true);
-      }
+        const filename = `${date}-${time.replace(':', '-')}.m4a`;
+        const url = await audioServices.getUrl(filename);
+        await playSound(url);
     } catch (error) {
-      if (error.name !== 'AbortError' && GlobalAudioController.activeTimestamp === timestampId) {
-        console.error('Error checking sound file:', error);
+        console.error('Error getting audio:', error);
         setShowUploadPrompt(true);
-        setIsActive(true);
-      }
     }
-  };
+};
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    // Set this timestamp as active and cleanup previous state
-    GlobalAudioController.cleanup();
-    GlobalAudioController.activeTimestamp = timestampId;
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    resetStates();
-    await cleanupCurrentAudio();
+  GlobalAudioController.cleanup();
+  GlobalAudioController.activeTimestamp = timestampId;
 
-    try {
+  resetStates();
+  await cleanupCurrentAudio();
+
+  try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioContext();
-      const reader = new FileReader();
+      const arrayBuffer = await file.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-      reader.onload = async (e) => {
-        if (GlobalAudioController.activeTimestamp !== timestampId) return;
+      // Trim to 3 minutes if longer
+      const duration = Math.min(180, audioBuffer.duration);
+      const trimmedBuffer = audioContext.createBuffer(
+          audioBuffer.numberOfChannels,
+          Math.floor(duration * audioBuffer.sampleRate),
+          audioBuffer.sampleRate
+      );
 
-        try {
-          const audioBuffer = await audioContext.decodeAudioData(e.target.result);
-          const duration = Math.min(180, audioBuffer.duration);
-          const trimmedBuffer = audioContext.createBuffer(
-            audioBuffer.numberOfChannels,
-            Math.floor(duration * audioBuffer.sampleRate),
-            audioBuffer.sampleRate
-          );
-
-          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-            trimmedBuffer.copyToChannel(
+      for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+          trimmedBuffer.copyToChannel(
               audioBuffer.getChannelData(channel).slice(0, Math.floor(duration * audioBuffer.sampleRate)),
               channel
-            );
-          }
-
-          const wavBlob = await audioBufferToWAV(trimmedBuffer);
-          const formData = new FormData();
-          const filename = `${date}-${time.replace(':', '-')}.m4a`;
-          formData.append('audio', wavBlob, filename);
-
-          const uploadResponse = await fetch('http://localhost:8001/save-audio', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!uploadResponse.ok) {
-            throw new Error('Failed to upload file');
-          }
-
-          if (GlobalAudioController.activeTimestamp === timestampId) {
-            setShowUploadPrompt(false);
-            await playSound(`http://localhost:8001/new-sounds/${filename}`);
-          }
-
-        } catch (error) {
-          if (GlobalAudioController.activeTimestamp === timestampId) {
-            console.error('Error processing file:', error);
-            alert('Error processing audio file. Please try again.');
-            resetStates();
-          }
-        }
-      };
-
-      reader.readAsArrayBuffer(file);
-
-    } catch (error) {
-      if (GlobalAudioController.activeTimestamp === timestampId) {
-        console.error('Error handling file upload:', error);
-        alert('Error handling file upload. Please try again.');
-        resetStates();
+          );
       }
-    }
-  };
 
-
-  
+      const wavBlob = await audioBufferToWAV(trimmedBuffer);
+      const filename = `${date}-${time.replace(':', '-')}.m4a`;
+      
+      // Upload to Firebase
+      const url = await audioServices.upload(wavBlob, filename);
+      
+      setShowUploadPrompt(false);
+      await playSound(url);
+  } catch (error) {
+      console.error('Error processing file:', error);
+      alert('Error processing audio file. Please try again.');
+      setShowUploadPrompt(false);
+      setIsPlaying(false);
+  }
+};
 
   useEffect(() => {
     return () => {

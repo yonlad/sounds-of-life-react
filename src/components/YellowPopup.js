@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { textServices } from '../firebase/services';
 
 const yellowTitles = {
   '331': 'September 1st',
@@ -68,54 +69,51 @@ const YellowPopup = ({ number, style, onClose }) => {
 
   const dimensions = React.useMemo(getRandomDimensions, []);
 
-  // Load text from server
+
+  // Load text from Firebase
   useEffect(() => {
+    let mounted = true;
+
     const fetchText = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:8001/yellow-text/${number}`);
-        if (response.ok) {
-          const data = await response.json();
-          setText(data.text || '');
-          setIsEditing(!data.text); // Start in edit mode if no text exists
-        } else {
-          throw new Error('Failed to fetch text');
+        setError(null);
+        const text = await textServices.getText(number);
+        if (mounted) {
+          setText(text);
+          setIsEditing(!text);
         }
-      } catch (error) {
-        console.error('Error fetching text:', error);
-        setError('Failed to load text');
+      } catch (err) {
+        console.error('Error fetching text:', err);
+        if (mounted) {
+          setError('Failed to load text. Please try again.');
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchText();
+    return () => { mounted = false; };
   }, [number]);
 
-  // Handle text submission
   const handleSubmit = async () => {
     try {
-      const response = await fetch('http://localhost:8001/save-yellow-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          number,
-          text,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save text');
+      setError(null);
+      const success = await textServices.saveText(number, text);
+      if (success) {
+        setIsEditing(false);
+      } else {
+        setError('Failed to save text');
       }
-
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error saving text:', error);
-      alert('Failed to save text. Please try again.');
+    } catch (err) {
+      console.error('Error saving text:', err);
+      setError('Failed to save text');
     }
   };
+
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -125,6 +123,7 @@ const YellowPopup = ({ number, style, onClose }) => {
       }
     }, 0);
   };
+  
 
   if (isLoading) {
     return (

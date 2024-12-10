@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/sounds-of-life-react/static/css/main.52119278.css",
-    "main.js": "/sounds-of-life-react/static/js/main.360bfbf6.js",
+    "main.css": "/sounds-of-life-react/static/css/main.97cce85f.css",
+    "main.js": "/sounds-of-life-react/static/js/main.0adf712e.js",
     "index.html": "/sounds-of-life-react/index.html",
-    "main.52119278.css.map": "/sounds-of-life-react/static/css/main.52119278.css.map",
-    "main.360bfbf6.js.map": "/sounds-of-life-react/static/js/main.360bfbf6.js.map"
+    "main.97cce85f.css.map": "/sounds-of-life-react/static/css/main.97cce85f.css.map",
+    "main.0adf712e.js.map": "/sounds-of-life-react/static/js/main.0adf712e.js.map"
   },
   "entrypoints": [
-    "static/css/main.52119278.css",
-    "static/js/main.360bfbf6.js"
+    "static/css/main.97cce85f.css",
+    "static/js/main.0adf712e.js"
   ]
 }
