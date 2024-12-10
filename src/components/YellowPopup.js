@@ -72,46 +72,40 @@ const YellowPopup = ({ number, style, onClose }) => {
 
   // Load text from Firebase
   useEffect(() => {
-    let mounted = true;
-
     const fetchText = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const text = await textServices.getText(number);
-        if (mounted) {
-          setText(text);
-          setIsEditing(!text);
+        try {
+            setIsLoading(true);
+            setError(null);
+            const result = await textServices.getText(number);
+            setText(result.text);
+            // If document doesn't exist, go straight to editing mode
+            setIsEditing(!result.exists);
+            setIsLoading(false);
+        } catch (err) {
+            console.error('Error fetching text:', err);
+            setError('Failed to load text');
+            setIsLoading(false);
+            setIsEditing(true);
         }
-      } catch (err) {
-        console.error('Error fetching text:', err);
-        if (mounted) {
-          setError('Failed to load text. Please try again.');
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
     };
 
     fetchText();
-    return () => { mounted = false; };
-  }, [number]);
+}, [number]);
 
   const handleSubmit = async () => {
-    try {
-      setError(null);
-      const success = await textServices.saveText(number, text);
-      if (success) {
-        setIsEditing(false);
-      } else {
-        setError('Failed to save text');
+      try {
+          setIsLoading(true);
+          const success = await textServices.saveText(number, text);
+          if (success) {
+              setIsEditing(false);
+          } else {
+              setError('Failed to save text');
+          }
+      } catch (err) {
+          setError('Failed to save text');
+      } finally {
+          setIsLoading(false);
       }
-    } catch (err) {
-      console.error('Error saving text:', err);
-      setError('Failed to save text');
-    }
   };
 
 
