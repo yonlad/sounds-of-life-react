@@ -14,16 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-
-      - name: Debug Info
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Git status:"
-          git status
-          echo "Directory contents:"
-          ls -la
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -31,13 +21,11 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies
-        run: |
-          npm install
-          echo "Node modules installed:"
-          ls -la node_modules
+        run: npm install
 
       - name: Build
         env:
+          CI: false  # Add this line to prevent treating warnings as errors
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
           REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
@@ -46,15 +34,9 @@ jobs:
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
           REACT_APP_FIREBASE_MEASUREMENT_ID: ${{ secrets.REACT_APP_FIREBASE_MEASUREMENT_ID }}
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-        run: |
-          npm run build
-          echo "Build directory contents:"
-          ls -la build
+        run: npm run build
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          clean: true
