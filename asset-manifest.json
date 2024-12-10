@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/sounds-of-life-react/static/css/main.ac88ac34.css",
-    "main.js": "/sounds-of-life-react/static/js/main.936bb969.js",
+    "main.js": "/sounds-of-life-react/static/js/main.d57a8bd4.js",
     "index.html": "/sounds-of-life-react/index.html",
     "main.ac88ac34.css.map": "/sounds-of-life-react/static/css/main.ac88ac34.css.map",
-    "main.936bb969.js.map": "/sounds-of-life-react/static/js/main.936bb969.js.map"
+    "main.d57a8bd4.js.map": "/sounds-of-life-react/static/js/main.d57a8bd4.js.map"
   },
   "entrypoints": [
     "static/css/main.ac88ac34.css",
-    "static/js/main.936bb969.js"
+    "static/js/main.d57a8bd4.js"
   ]
 }
