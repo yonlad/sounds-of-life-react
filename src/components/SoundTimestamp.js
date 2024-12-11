@@ -458,11 +458,11 @@ const handleFileUpload = async (event) => {
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'white',
-                                            fontSize: '12px',
+                                            fontSize: '16px',
                                             fontWeight: 'bold',
                                         }}
                                     >
-                                        Processing...
+                                        processing
                                     </div>
                                 </div>
                             </div>
