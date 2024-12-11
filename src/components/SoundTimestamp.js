@@ -51,7 +51,8 @@ const SoundTimestamp = ({ time, date, suppressProgressBar, onProgress }) => {
 
     useEffect(() => {
       console.log('Processing state:', isProcessing);
-  }, [isProcessing]);
+      console.log('Progress bar should be visible:', isProcessing || isPlaying);
+  }, [isProcessing, isPlaying]);
 
   const resetStates = () => {
     setIsPlaying(false);
@@ -290,56 +291,62 @@ const handleFileUpload = async (event) => {
     };
   }, [timestampId]);
 
-  return (
-    <div className="timestamp-container">
-        <div
-            onClick={checkAndPlaySound}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-                backgroundColor: isActive ? '#ddd' : isHovered ? '#ddd' : '#f0f0f0',
-                border: 'none',
-                padding: '10px',
-                fontSize: '18px',
-                cursor: 'pointer',
-                transition: 'background-color 0.3s',
-                color: 'black',
-                width: '100%',
-                textAlign: 'center',
-            }}
-        >
-            {time}
-        </div>
 
-        {(isPlaying || isProcessing) && !suppressProgressBar && (
+
+  const processingBarStyle = {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ffa500',
+    backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent)',
+    backgroundSize: '40px 40px',
+    animation: 'progress-bar-stripes 1s linear infinite',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+};
+
+    return (
+        <div className="timestamp-container">
+            {/* Timestamp button */}
             <div
-                ref={progressBarRef}
+                onClick={checkAndPlaySound}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 style={{
+                    backgroundColor: isActive ? '#ddd' : isHovered ? '#ddd' : '#f0f0f0',
+                    border: 'none',
+                    padding: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s',
+                    color: 'black',
                     width: '100%',
-                    height: '20px',
-                    backgroundColor: '#ddd',
-                    marginTop: '3px',
-                    cursor: isProcessing ? 'wait' : 'e-resize',
-                    position: 'relative',
-                    overflow: 'hidden'
+                    textAlign: 'center',
                 }}
             >
-                {isProcessing ? (
-                    <div style={{
+                {time}
+            </div>
+
+            {/* Regular progress bar - only for playback */}
+            {isPlaying && !suppressProgressBar && !isProcessing && (
+                <div
+                    ref={progressBarRef}
+                    style={{
                         width: '100%',
-                        height: '100%',
-                        backgroundColor: '#ffa500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        animation: 'pulse 1.5s infinite'
-                    }}>
-                        processing...
-                    </div>
-                ) : (
+                        height: '20px',
+                        backgroundColor: '#ddd',
+                        marginTop: '3px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'e-resize',
+                    }}
+                >
                     <div
                         onClick={(e) => {
                             if (audioRef.current && audioRef.current.duration) {
@@ -356,79 +363,124 @@ const handleFileUpload = async (event) => {
                             height: '100%',
                             backgroundColor: '#4caf50',
                             transition: 'width 0.1s linear',
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
                         }}
                     />
-                )}
-            </div>
-        )}
+                </div>
+            )}
 
+            {/* Upload popup with processing indicator */}
+            {(showUploadPrompt || isProcessing) && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        backgroundColor: 'rgb(220, 220, 220)',
+                        width: '300px',
+                        height: '306px',
+                        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
+                        cursor: 'move',
+                        zIndex: 1000,
+                    }}
+                >
+                    <div style={{ padding: '20px', textAlign: 'center' }}>
+                        {!isProcessing && (
+                            <>
+                                <span
+                                    onClick={() => {
+                                        resetStates();
+                                        GlobalAudioController.cleanup();
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '20px',
+                                        fontSize: '24px',
+                                        cursor: 'crosshair',
+                                        color: 'rgb(250, 250, 250)',
+                                    }}
+                                >
+                                    ×
+                                </span>
+                                <h3 style={{ color: 'black', marginBottom: '20px' }}>
+                                    Upload new recording for {time}
+                                </h3>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="audio/*"
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    style={{
+                                        backgroundColor: '#f0f0f0',
+                                        border: 'none',
+                                        padding: '10px',
+                                        fontSize: '18px',
+                                        cursor: 'pointer',
+                                        width: '120px',
+                                        marginTop: '20px',
+                                        color: 'black',
+                                    }}
+                                >
+                                    Select File
+                                </button>
+                            </>
+                        )}
+                        
+                        {isProcessing && (
+                            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <h3 style={{ color: 'black', marginBottom: '20px' }}>
+                                    Processing Audio
+                                </h3>
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        height: '20px',
+                                        backgroundColor: '#ddd',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        margin: '20px 0',
+                                    }}
+                                >
+                                    <div 
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            backgroundColor: '#ffa500',
+                                            backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent)',
+                                            backgroundSize: '40px 40px',
+                                            animation: 'progress-bar-stripes 1s linear infinite',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        Processing...
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
-
-      {showUploadPrompt && !isProcessing && (
-        <div
-          style={{
-            position: 'fixed',
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgb(220, 220, 220)',
-            width: '300px',
-            height: '306px',
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
-            cursor: 'move',
-            zIndex: 1000,
-          }}
-        >
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <span
-              onClick={() => {
-                resetStates();
-                GlobalAudioController.cleanup();
-              }}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '20px',
-                fontSize: '24px',
-                cursor: 'crosshair',
-                color: 'rgb(250, 250, 250)',
-              }}
-            >
-              ×
-            </span>
-            <h3 style={{ color: 'black', marginBottom: '20px' }}>
-              Upload new recording for {time}
-            </h3>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="audio/*"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              style={{
-                backgroundColor: '#f0f0f0', 
-                border: 'none',
-                padding: '10px',
-                fontSize: '18px',
-                cursor: 'pointer',
-                width: '120px',
-                marginTop: '20px',
-                color: 'black',
-              }}
-            >
-              Select File
-            </button>
-          </div>
+            <style>
+                {`
+                    @keyframes progress-bar-stripes {
+                        from { background-position: 40px 0; }
+                        to { background-position: 0 0; }
+                    }
+                `}
+            </style>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default SoundTimestamp;
