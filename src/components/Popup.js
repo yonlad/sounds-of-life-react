@@ -114,7 +114,7 @@ const Popup = ({ type, date, style, onClose }) => {
             color: 'black',
           }}
         >
-          {`?`/* isRed ? `${date}` : `${date}` */}
+          {`<?>`/* isRed ? `${date}` : `${date}` */}
         </h3>
 
         <div 
