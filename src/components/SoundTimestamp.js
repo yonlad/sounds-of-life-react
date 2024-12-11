@@ -454,6 +454,7 @@ const handleFileUpload = async (event) => {
                                             backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent)',
                                             backgroundSize: '40px 40px',
                                             animation: 'progress-bar-stripes 1s linear infinite',
+                                            animation: 'pulse 1s infinite',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
