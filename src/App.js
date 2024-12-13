@@ -80,7 +80,7 @@ const App = () => {
       transformOrigin: 'top center',
       height: '111.111vh',
       width: '100%',
-      overflowX: 'hidden',
+      overflow: 'hidden',
       cursor: 'none',
     }}>
       <CalendarHeader onTitleClick={handleHeaderClick} />
