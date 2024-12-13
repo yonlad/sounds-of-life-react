@@ -1,12 +1,68 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SoundTimestamp from './SoundTimestamp';
 
+
+const yellowTitles = {
+  '331': 'September 1st',
+  '332': 'September 2nd',
+  '333': 'September 3rd',
+  '334': 'September 4th',
+  '335': 'September 5th',
+  '336': 'September 6th',
+  '337': 'September 7th',
+  '338': 'September 8th',
+  '339': 'September 9th',
+  '340': 'September 10th',
+  '341': 'September 11th',
+  '342': 'September 12th',
+  '343': 'September 13th',
+  '344': 'September 14th',
+  '345': 'September 15th',
+  '346': 'September 16th',
+  '347': 'September 17th',
+  '348': 'September 18th',
+  '349': 'September 19th',
+  '350': 'September 20th',
+  '351': 'September 21st',
+  '352': 'September 22nd',
+  '353': 'September 23rd',
+  '354': 'September 24th',
+  '355': 'September 25th',
+  '356': 'September 26th',
+  '357': 'September 27th',
+  '358': 'September 28th',
+  '359': 'September 29th',
+  '360': 'September 30th',
+  '361': 'October 1st',
+  '362': 'October 2nd',
+  '363': 'October 3rd',
+  '364': 'October 4th',
+  '365': 'October 5th',
+};
+
+
 const Popup = ({ type, date, style, onClose }) => {
   const isRed = type === 'red';
   const [progress, setProgress] = useState(0);
   const [activeTimestamp, setActiveTimestamp] = useState(null);
   const progressBarRef = useRef(null);
   const popupId = useRef(`popup-${Date.now()}`);
+
+  // Convert date (YYYY-MM-DD) to day number
+  const getDayNumber = (dateString) => {
+    const date = new Date(dateString);
+    // Adjusting the offset to -87 instead of -82 to align correctly
+    const startDate = new Date(date.getFullYear(), 0, -87);
+    const diff = date - startDate;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayNum = Math.floor(diff / oneDay).toString();
+    
+    console.log('Input date:', dateString);
+    console.log('Calculated day number:', dayNum);
+    console.log('Lookup title:', yellowTitles[dayNum]);
+    
+    return dayNum;
+  };
 
   // Handle progress bar click for seeking
   const handleProgressBarClick = (e) => {
@@ -69,6 +125,12 @@ const Popup = ({ type, date, style, onClose }) => {
     };
   }, []);
 
+
+  // Get the title based on the day number
+  const dayNumber = getDayNumber(date);
+  console.log(dayNumber)
+  const title = yellowTitles[dayNumber] || date;
+
   return (
     <div 
       style={{
@@ -114,7 +176,7 @@ const Popup = ({ type, date, style, onClose }) => {
             color: 'black',
           }}
         >
-          {`<  >`/* isRed ? `${date}` : `${date}` */}
+          {title}
         </h3>
 
         <div 

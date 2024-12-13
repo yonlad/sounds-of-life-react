@@ -129,6 +129,7 @@ const YellowPopup = ({ number, style, onClose }) => {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
+        animation: 'pulse 1s infinite',
         ...style,
       }}>
         Loading...
