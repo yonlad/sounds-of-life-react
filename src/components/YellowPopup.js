@@ -129,10 +129,25 @@ const YellowPopup = ({ number, style, onClose }) => {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        animation: 'pulse 1s infinite',
         ...style,
       }}>
-        Loading...
+        <span style={{ animation: 'pulse-text 1.5s ease-in-out infinite' }}>
+          <style>
+            {`
+              @keyframes pulse-text {
+                0%, 100% { 
+                  opacity: 0.4;
+                  transform: scale(0.95);
+                }
+                50% { 
+                  opacity: 1;
+                  transform: scale(1.05);
+                }
+              }
+            `}
+          </style>
+          Loading...
+        </span>
       </div>
     );
   }
